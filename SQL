@@ -1,0 +1,44 @@
+-- Check the missing data
+SELECT count(i.*) as total_rows, count(i.description) as count_description, count(f.listing_price) as count_listing_price, count(t.last_visited) as count_last_visited
+FROM info i
+join finance f
+using (product_id)
+join traffic t
+using (product_id)
+where product_id IS NOT NULL
+;
+
+-- How do the price points of Nike and Adidas products differ?
+SELECT b.brand, cast(f.listing_price as int), count(*)
+from brands b
+join finance f using(product_id)
+where cast(f.listing_price as int) > 0
+group by b.brand, cast(f.listing_price as int)
+order by cast(f.listing_price as int) DESC;
+
+--Categories prices
+SELECT b.brand, count(f.product_id), sum(f.revenue) as total_revenue,
+        CASE 
+            when f.listing_price < 42 then 'Budget'
+            when f.listing_price >= 42 and f.listing_price < 74 then 'Average'
+            when f.listing_price >= 74 and f.listing_price < 129  then 'Expensive'
+            when f.listing_price > 129 then 'Elite'
+        END as price_category
+FROM brands b
+join finance f using(product_id)
+Where brand IS NOT NULL
+group by b.brand, price_category
+order by sum(f.revenue) DESC;
+
+-- Check average discount by brand (Nike VS Adidas)
+SELECT brand, avg(discount) * 100 as average_discount
+FROM brands b 
+join finance using(product_id)
+where brand IS NOT NULL
+group by brand;
+
+--Correlation between revenue and reviews
+SELECT Corr(reviews, revenue)  as review_revenue_corr
+from reviews 
+join finance 
+using(product_id);
